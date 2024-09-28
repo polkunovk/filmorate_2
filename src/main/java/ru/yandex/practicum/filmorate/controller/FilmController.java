@@ -60,12 +60,18 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable Long userId) {
+        if (!filmService.userExists(userId)) {
+            throw new ValidationException("Пользователь с ID " + userId + " не найден.");
+        }
         filmService.addLike(id, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable Long userId) {
+        if (!filmService.userExists(userId)) {
+            throw new ValidationException("Пользователь с ID " + userId + " не найден.");
+        }
         filmService.removeLike(id, userId);
         return ResponseEntity.noContent().build();
     }

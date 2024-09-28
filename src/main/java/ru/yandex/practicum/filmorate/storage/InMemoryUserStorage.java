@@ -59,4 +59,10 @@ public class InMemoryUserStorage implements UserStorage {
         commonFriendsIds.retainAll(otherUserFriends);
         return getUsersByIds(commonFriendsIds);
     }
+
+    @Override
+    public boolean userExists(Long userId) {
+        return users.values().stream()
+                .anyMatch(user -> user.getId() == userId);
+    }
 }
