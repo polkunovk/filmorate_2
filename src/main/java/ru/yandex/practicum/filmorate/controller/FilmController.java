@@ -63,26 +63,13 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<String> addLike(@PathVariable int id, @PathVariable Long userId) {
         log.info("Добавление лайка: фильм {} получает лайк от пользователя {}", id, userId);
-
-        // Проверка существования пользователя
-        if (!filmService.userExists(userId)) {
-            log.error("Пользователь с ID {} не найден", userId);
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("Пользователь с таким ID не найден."); // Возвращаем 404 Not Found с сообщением
-        }
-
-        filmService.addLike(id, userId);
-        return ResponseEntity.ok().build(); // Возвращаем 200 OK
+        return filmService.addLike(id, userId); // Возвращаем ResponseEntity из сервиса
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable Long userId) {
-        if (!filmService.userExists(userId)) {
-            throw new ValidationException("Пользователь с ID " + userId + " не найден.");
-        }
-        filmService.removeLike(id, userId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> removeLike(@PathVariable int id, @PathVariable Long userId) {
+        log.info("Удаление лайка: фильм {} удаляет лайк от пользователя {}", id, userId);
+        return filmService.removeLike(id, userId); // Возвращаем ResponseEntity из сервиса
     }
 
     @GetMapping("/popular")
