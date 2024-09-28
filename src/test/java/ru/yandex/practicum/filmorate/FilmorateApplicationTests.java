@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+//import org.springframework.http.HttpStatus;
+//import org.springframework.http.ResponseEntity;
 
 @SpringBootTest
 class FilmorateApplicationTests {
@@ -34,11 +36,18 @@ class FilmorateApplicationTests {
 
 	private Film film;
 	private User user;
+	private User validUser;
 
 	@BeforeEach
 	void setUp() {
 		film = new Film();
 		user = new User();
+
+		// Инициализация валидного пользователя
+		validUser = new User();
+		validUser.setEmail("example@mail.com");
+		validUser.setLogin("validLogin");
+		validUser.setBirthday(LocalDate.of(2000, 1, 1));
 	}
 
 	@Test
@@ -145,4 +154,104 @@ class FilmorateApplicationTests {
 		});
 		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
 	}
+
+	// Тесты для добавления и удаления друзей
+//	@Test
+//	void addFriendTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		User friend = new User();
+//		friend.setId(2);
+//		userController.addUser(friend);
+//
+//		ResponseEntity<Void> response = userController.addFriend(user.getId(), friend.getId());
+//		assertEquals(HttpStatus.CREATED, response.getStatusCode(), "Друг должен быть успешно добавлен.");
+//	}
+//
+//	@Test
+//	void addFriendUserNotFoundTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		Exception exception = assertThrows(ValidationException.class, () -> {
+//			userController.addFriend(user.getId(), 999);
+//		});
+//		assertEquals("Пользователь с таким ID не найден.", exception.getMessage());
+//	}
+//
+//	@Test
+//	void removeFriendTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		User friend = new User();
+//		friend.setId(2);
+//		userController.addUser(friend);
+//
+//		userController.addFriend(user.getId(), friend.getId());
+//
+//		ResponseEntity<Void> response = userController.removeFriend(user.getId(), friend.getId());
+//		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(), "Друг должен быть успешно удален.");
+//	}
+//
+//	@Test
+//	void removeFriendUserNotFoundTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		Exception exception = assertThrows(ValidationException.class, () -> {
+//			userController.removeFriend(user.getId(), 999);
+//		});
+//		assertEquals("Пользователь с таким ID не найден.", exception.getMessage());
+//	}
+//
+//	// Тесты для добавления и удаления лайков
+//	@Test
+//	void addLikeTest() {
+//		film.setId(1);
+//		filmController.addFilm(film);
+//
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		ResponseEntity<Void> response = filmController.addLike(film.getId(), (long) user.getId());
+//		assertEquals(HttpStatus.CREATED, response.getStatusCode(), "Лайк должен быть успешно добавлен.");
+//	}
+//
+//	@Test
+//	void addLikeFilmNotFoundTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		Exception exception = assertThrows(ValidationException.class, () -> {
+//			filmController.addLike(999, (long) user.getId());
+//		});
+//		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
+//	}
+//
+//	@Test
+//	void removeLikeTest() {
+//		film.setId(1);
+//		filmController.addFilm(film);
+//
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		filmController.addLike(film.getId(), (long) user.getId());
+//
+//		ResponseEntity<Void> response = filmController.removeLike(film.getId(), (long) user.getId());
+//		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(), "Лайк должен быть успешно удален.");
+//	}
+//
+//	@Test
+//	void removeLikeFilmNotFoundTest() {
+//		user.setId(1);
+//		userController.addUser(user);
+//
+//		Exception exception = assertThrows(ValidationException.class, () -> {
+//			filmController.removeLike(999, (long) user.getId());
+//		});
+//		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
+//	}
 }
