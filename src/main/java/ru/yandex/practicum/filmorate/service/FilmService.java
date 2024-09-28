@@ -79,7 +79,11 @@ public class FilmService {
     }
 
     public void removeLike(int filmId, Long userId) {
-        Film film = getFilmById(filmId);
+        Film film = filmStorage.getFilmById(filmId);
+        if (film == null) {
+            log.warn("Фильм с ID {} не найден.", filmId);
+            throw new ValidationException("Фильм с таким ID не найден.");
+        }
         film.removeLike(userId);
     }
 
