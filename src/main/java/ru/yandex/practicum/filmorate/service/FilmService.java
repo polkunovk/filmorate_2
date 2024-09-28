@@ -2,13 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+//import ru.yandex.practicum.filmorate.model.User; // Убедитесь, что этот импорт есть
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage; // Импортируем UserStorage
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,12 +17,12 @@ public class FilmService {
 
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final UserStorage userStorage; // Храним ссылку на UserStorage
     private final LocalDate earliestReleaseDate = LocalDate.of(1895, 12, 28);
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) { // Добавляем userStorage в конструктор
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+        this.userStorage = userStorage; // Инициализируем userStorage
     }
 
     public Film addFilm(Film film) {
@@ -78,38 +77,25 @@ public class FilmService {
         }
     }
 
-    public ResponseEntity<String> addLike(int filmId, Long userId) {
+    public void addLike(int filmId, Long userId) {
         Film film = getFilmById(filmId);
-
-        // Проверка существования пользователя
-        if (!userExists(userId)) {
-            log.error("Пользователь с ID {} не найден", userId);
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("{\"message\": \"Пользователь с таким ID не найден.\"}");
-        }
-
         film.addLike(userId);
-        return ResponseEntity.ok().build(); // Возвращаем 200 OK
     }
 
-    public ResponseEntity<String> removeLike(int filmId, Long userId) {
+    public void removeLike(int filmId, Long userId) {
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             log.warn("Фильм с ID {} не найден.", filmId);
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("{\"message\": \"Фильм с таким ID не найден.\"}");
+            throw new ValidationException("Фильм с таким ID не найден.");
         }
-
         film.removeLike(userId);
-        return ResponseEntity.noContent().build(); // Возвращаем 204 No Content
     }
 
     public List<Film> getPopularFilms(int count) {
         return filmStorage.getPopularFilms(count);
     }
 
+    // Добавляем метод userExists
     public boolean userExists(Long userId) {
         return userStorage.getUserById(Math.toIntExact(userId)) != null;
     }
