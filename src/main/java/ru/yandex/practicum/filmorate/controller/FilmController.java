@@ -34,10 +34,8 @@ public class FilmController {
         try {
             Film updatedFilm = filmService.updateFilm(film);
             return ResponseEntity.ok(updatedFilm);
-        } catch (ValidationException e) {
-            log.error("Ошибка обновления фильма: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Фильм с таким ID не найден.");
         }
     }
 
@@ -49,14 +47,11 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilmById(@PathVariable int id) {
-        try {
-            Film film = filmService.getFilmById(id);
-            return ResponseEntity.ok(film);
-        } catch (ValidationException e) {
-            log.error("Фильм с ID {} не найден: {}", id, e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
+        Film film = filmService.getFilmById(id);
+        if (film == null) {
+            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(film);
     }
 
     @DeleteMapping("/{id}")
@@ -66,14 +61,13 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<String> addLike(@PathVariable int id, @PathVariable Long userId) {
+    public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable Long userId) {
         log.info("Добавление лайка: фильм {} получает лайк от пользователя {}", id, userId);
 
         // Проверка существования пользователя
         if (!filmService.userExists(userId)) {
             log.error("Пользователь с ID {} не найден", userId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"Пользователь с ID " + userId + " не найден.\"}"); // Возвращаем сообщение в JSON
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Возвращаем 404 Not Found
         }
 
         filmService.addLike(id, userId);
@@ -83,7 +77,6 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable Long userId) {
         if (!filmService.userExists(userId)) {
-            log.error("Пользователь с ID {} не найден", userId);
             throw new ValidationException("Пользователь с ID " + userId + " не найден.");
         }
         filmService.removeLike(id, userId);
