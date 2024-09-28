@@ -70,12 +70,8 @@ public class UserController {
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
-        try {
-            userService.removeFriend(id, friendId);
-            return ResponseEntity.noContent().build();  // 204 No Content
-        } catch (ValidationException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // 404 Not Found
-        }
+        userService.removeFriend(id, friendId);
+        return ResponseEntity.noContent().build();  // 204 No Content
     }
 
     @GetMapping("/{id}/friends")
