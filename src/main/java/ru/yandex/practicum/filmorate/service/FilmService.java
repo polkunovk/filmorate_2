@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-//import ru.yandex.practicum.filmorate.model.User; // Убедитесь, что этот импорт есть
+//import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage; // Импортируем UserStorage
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,12 +17,12 @@ public class FilmService {
 
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage; // Храним ссылку на UserStorage
+    private final UserStorage userStorage;
     private final LocalDate earliestReleaseDate = LocalDate.of(1895, 12, 28);
 
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) { // Добавляем userStorage в конструктор
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage; // Инициализируем userStorage
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -95,7 +95,6 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
-    // Добавляем метод userExists
     public boolean userExists(Long userId) {
         return userStorage.getUserById(Math.toIntExact(userId)) != null;
     }

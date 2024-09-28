@@ -21,5 +21,5 @@ public interface UserStorage {
 
     List<User> getCommonFriends(Set<Long> userFriends, Set<Long> otherUserFriends);
 
-    boolean userExists(Long userId); // Новый метод для проверки существования пользователя
+    boolean userExists(Long userId);
 }

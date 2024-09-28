@@ -64,11 +64,10 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Map<String, String>> addLike(@PathVariable int id, @PathVariable Long userId) {
-        log.info("Добавление лайка: фильм {} получает лайк от пользователя {}", id, userId);
+        log.info("Добавление лайка: фильм {} лайкнул {}", id, userId);
 
         if (!filmService.userExists(userId)) {
             log.error("Пользователь с ID {} не найден", userId);
-            // Возвращаем сообщение об ошибке в теле ответа
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Пользователь с ID " + userId + " не найден.");
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);

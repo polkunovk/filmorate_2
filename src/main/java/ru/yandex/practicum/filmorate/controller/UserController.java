@@ -64,7 +64,7 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();  // Статус 204 No Content
+        return ResponseEntity.noContent().build();  //  204
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -83,14 +83,14 @@ public class UserController {
         }
 
         userService.addFriend(id, friendId);
-        return ResponseEntity.ok().build();  // Возвращаем 200 OK
+        return ResponseEntity.ok().build();  // 200
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Удаление друга: пользователь {} удаляет {} из друзей", id, friendId);
         userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();  // Статус 204 No Content
+        return ResponseEntity.noContent().build();  // 204
     }
 
     @GetMapping("/{id}/friends")
