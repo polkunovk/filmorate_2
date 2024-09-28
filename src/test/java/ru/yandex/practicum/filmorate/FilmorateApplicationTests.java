@@ -161,11 +161,4 @@ class FilmorateApplicationTests {
 		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
 	}
 
-//	@Test
-//	void addFriendStatusCodeTest() throws Exception {
-//		mockMvc.perform(MockMvcRequestBuilders
-//						.put("/users/1/friends/2")
-//						.contentType(MediaType.APPLICATION_JSON))
-//				.andExpect(status().isCreated());  // Ожидаем статус-код 201
-//	}
 }

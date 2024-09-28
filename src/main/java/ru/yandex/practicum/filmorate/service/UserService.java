@@ -64,8 +64,13 @@ public class UserService {
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+
+        if (user == null || friend == null) {
+            log.warn("Пользователь или друг не найдены: userId={}, friendId={}", userId, friendId);
+            throw new ValidationException("Пользователь или друг не найдены.");
+        }
 
         user.removeFriend((long) friendId);
         friend.removeFriend((long) userId);
