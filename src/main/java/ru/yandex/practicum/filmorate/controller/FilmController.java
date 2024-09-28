@@ -9,7 +9,9 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -60,11 +62,9 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable Long userId) {
-        if (!filmService.userExists(userId)) {
-            throw new ValidationException("Пользователь с ID " + userId + " не найден.");
-        }
-        filmService.addLike(id, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        log.info("Добавление лайка: фильм {} получает лайк от пользователя {}", id, userId);
+        filmService.addLike(id, userId);  // Убедитесь, что здесь используется Long
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")

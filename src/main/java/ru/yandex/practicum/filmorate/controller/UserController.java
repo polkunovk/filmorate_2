@@ -71,7 +71,7 @@ public class UserController {
     public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Добавление друга: пользователь {} добавляет {} в друзья", id, friendId);
         userService.addFriend(id, friendId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();  // Статус 201 Created
+        return ResponseEntity.ok().build();  // Возвращаем 200 OK вместо 201 Created
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
