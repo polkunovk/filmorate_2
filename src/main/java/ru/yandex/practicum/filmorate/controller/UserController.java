@@ -70,8 +70,20 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Добавление друга: пользователь {} добавляет {} в друзья", id, friendId);
+
+        // Проверка существования пользователей
+        if (userService.getUserById(id) == null) {
+            log.error("Пользователь с ID {} не найден", id);
+            throw new ValidationException("Пользователь с ID " + id + " не найден.");
+        }
+
+        if (userService.getUserById(friendId) == null) {
+            log.error("Друг с ID {} не найден", friendId);
+            throw new ValidationException("Друг с ID " + friendId + " не найден.");
+        }
+
         userService.addFriend(id, friendId);
-        return ResponseEntity.ok().build();  // Возвращаем 200 OK вместо 201 Created
+        return ResponseEntity.ok().build();  // Возвращаем 200 OK
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
