@@ -3,7 +3,11 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -19,11 +23,14 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class FilmorateApplicationTests {
+
+	@Autowired
+	private MockMvc mockMvc;
 
 	@Autowired
 	private FilmController filmController;
@@ -43,7 +50,6 @@ class FilmorateApplicationTests {
 		film = new Film();
 		user = new User();
 
-		// Инициализация валидного пользователя
 		validUser = new User();
 		validUser.setEmail("example@mail.com");
 		validUser.setLogin("validLogin");
@@ -155,103 +161,11 @@ class FilmorateApplicationTests {
 		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
 	}
 
-	// Тесты для добавления и удаления друзей
 //	@Test
-//	void addFriendTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		User friend = new User();
-//		friend.setId(2);
-//		userController.addUser(friend);
-//
-//		ResponseEntity<Void> response = userController.addFriend(user.getId(), friend.getId());
-//		assertEquals(HttpStatus.CREATED, response.getStatusCode(), "Друг должен быть успешно добавлен.");
-//	}
-//
-//	@Test
-//	void addFriendUserNotFoundTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		Exception exception = assertThrows(ValidationException.class, () -> {
-//			userController.addFriend(user.getId(), 999);
-//		});
-//		assertEquals("Пользователь с таким ID не найден.", exception.getMessage());
-//	}
-//
-//	@Test
-//	void removeFriendTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		User friend = new User();
-//		friend.setId(2);
-//		userController.addUser(friend);
-//
-//		userController.addFriend(user.getId(), friend.getId());
-//
-//		ResponseEntity<Void> response = userController.removeFriend(user.getId(), friend.getId());
-//		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(), "Друг должен быть успешно удален.");
-//	}
-//
-//	@Test
-//	void removeFriendUserNotFoundTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		Exception exception = assertThrows(ValidationException.class, () -> {
-//			userController.removeFriend(user.getId(), 999);
-//		});
-//		assertEquals("Пользователь с таким ID не найден.", exception.getMessage());
-//	}
-//
-//	// Тесты для добавления и удаления лайков
-//	@Test
-//	void addLikeTest() {
-//		film.setId(1);
-//		filmController.addFilm(film);
-//
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		ResponseEntity<Void> response = filmController.addLike(film.getId(), (long) user.getId());
-//		assertEquals(HttpStatus.CREATED, response.getStatusCode(), "Лайк должен быть успешно добавлен.");
-//	}
-//
-//	@Test
-//	void addLikeFilmNotFoundTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		Exception exception = assertThrows(ValidationException.class, () -> {
-//			filmController.addLike(999, (long) user.getId());
-//		});
-//		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
-//	}
-//
-//	@Test
-//	void removeLikeTest() {
-//		film.setId(1);
-//		filmController.addFilm(film);
-//
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		filmController.addLike(film.getId(), (long) user.getId());
-//
-//		ResponseEntity<Void> response = filmController.removeLike(film.getId(), (long) user.getId());
-//		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(), "Лайк должен быть успешно удален.");
-//	}
-//
-//	@Test
-//	void removeLikeFilmNotFoundTest() {
-//		user.setId(1);
-//		userController.addUser(user);
-//
-//		Exception exception = assertThrows(ValidationException.class, () -> {
-//			filmController.removeLike(999, (long) user.getId());
-//		});
-//		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
+//	void addFriendStatusCodeTest() throws Exception {
+//		mockMvc.perform(MockMvcRequestBuilders
+//						.put("/users/1/friends/2")
+//						.contentType(MediaType.APPLICATION_JSON))
+//				.andExpect(status().isCreated());  // Ожидаем статус-код 201
 //	}
 }
