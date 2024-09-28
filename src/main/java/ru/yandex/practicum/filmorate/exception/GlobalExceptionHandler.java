@@ -19,14 +19,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex) {
         log.error("Ошибка валидации: {}", ex.getMessage());
         Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", ex.getMessage());  // Сообщение об ошибке
+        errorResponse.put("error", ex.getMessage());
 
-        // Возвращаем 404 Not Found для ошибок типа "не найден"
         if (ex.getMessage().contains("не найден")) {
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);  // Возвращаем 400 Bad Request для остальных ошибок
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

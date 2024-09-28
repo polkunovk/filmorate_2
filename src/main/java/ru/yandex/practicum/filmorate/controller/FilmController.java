@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+import java.util.HashMap;
 
 @Slf4j
 @RestController
@@ -61,17 +63,19 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable Long userId) {
+    public ResponseEntity<Map<String, String>> addLike(@PathVariable int id, @PathVariable Long userId) {
         log.info("Добавление лайка: фильм {} получает лайк от пользователя {}", id, userId);
 
-        // Проверка существования пользователя
         if (!filmService.userExists(userId)) {
             log.error("Пользователь с ID {} не найден", userId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Возвращаем 404 Not Found
+            // Возвращаем сообщение об ошибке в теле ответа
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Пользователь с ID " + userId + " не найден.");
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
         filmService.addLike(id, userId);
-        return ResponseEntity.ok().build();  // Возвращаем 200 OK
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
