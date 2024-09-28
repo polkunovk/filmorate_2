@@ -16,15 +16,10 @@ public class GlobalExceptionHandler {
     private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex) {
-        log.error("Ошибка валидации: {}", ex.getMessage());
+    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException e) {
         Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", ex.getMessage());
-
-        if (ex.getMessage().contains("не найден")) {
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

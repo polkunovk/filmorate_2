@@ -34,8 +34,10 @@ public class FilmController {
         try {
             Film updatedFilm = filmService.updateFilm(film);
             return ResponseEntity.ok(updatedFilm);
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException("Фильм с таким ID не найден.");
+        } catch (ValidationException e) {
+            log.error("Ошибка обновления фильма: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
         }
     }
 
@@ -47,11 +49,14 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilmById(@PathVariable int id) {
-        Film film = filmService.getFilmById(id);
-        if (film == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            Film film = filmService.getFilmById(id);
+            return ResponseEntity.ok(film);
+        } catch (ValidationException e) {
+            log.error("Фильм с ID {} не найден: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
         }
-        return ResponseEntity.ok(film);
     }
 
     @DeleteMapping("/{id}")
@@ -68,7 +73,7 @@ public class FilmController {
         if (!filmService.userExists(userId)) {
             log.error("Пользователь с ID {} не найден", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Пользователь с ID " + userId + " не найден."); // Возвращаем сообщение
+                    .body("{\"error\": \"Пользователь с ID " + userId + " не найден.\"}"); // Возвращаем сообщение в JSON
         }
 
         filmService.addLike(id, userId);
@@ -78,6 +83,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable Long userId) {
         if (!filmService.userExists(userId)) {
+            log.error("Пользователь с ID {} не найден", userId);
             throw new ValidationException("Пользователь с ID " + userId + " не найден.");
         }
         filmService.removeLike(id, userId);
