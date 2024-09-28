@@ -58,7 +58,7 @@ public class FilmController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PostMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable Long userId) {
         filmService.addLike(id, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
