@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -21,7 +23,11 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class FilmorateApplicationTests {
+
+	@Autowired
+	private MockMvc mockMvc;
 
 	@Autowired
 	private FilmController filmController;
@@ -34,11 +40,17 @@ class FilmorateApplicationTests {
 
 	private Film film;
 	private User user;
+	private User validUser;
 
 	@BeforeEach
 	void setUp() {
 		film = new Film();
 		user = new User();
+
+		validUser = new User();
+		validUser.setEmail("example@mail.com");
+		validUser.setLogin("validLogin");
+		validUser.setBirthday(LocalDate.of(2000, 1, 1));
 	}
 
 	@Test
@@ -145,4 +157,5 @@ class FilmorateApplicationTests {
 		});
 		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
 	}
+
 }
