@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-//import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -54,6 +53,10 @@ public class FilmService {
     }
 
     public void deleteFilm(int id) {
+        if (filmStorage.getFilmById(id) == null) {
+            log.warn("Фильм с ID {} для удаления не найден.", id);
+            throw new ValidationException("Фильм с таким ID не найден.");
+        }
         filmStorage.deleteFilm(id);
     }
 
@@ -78,11 +81,21 @@ public class FilmService {
     }
 
     public void addLike(int filmId, Long userId) {
+        if (!userExists(userId)) {
+            log.warn("Пользователь с ID {} не найден.", userId);
+            throw new ValidationException("Пользователь с таким ID не найден.");
+        }
+
         Film film = getFilmById(filmId);
         film.addLike(userId);
     }
 
     public void removeLike(int filmId, Long userId) {
+        if (!userExists(userId)) {
+            log.warn("Пользователь с ID {} не найден.", userId);
+            throw new ValidationException("Пользователь с таким ID не найден.");
+        }
+
         Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             log.warn("Фильм с ID {} не найден.", filmId);

@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 @RequestMapping("/users")
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -27,19 +26,14 @@ public class UserController {
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
         log.info("Добавление пользователя: {}", user);
         User createdUser = userService.addUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);  // Статус 201 Created
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
         log.info("Обновление пользователя с ID: {}", user.getId());
-        try {
-            User updatedUser = userService.updateUser(user);
-            return ResponseEntity.ok(updatedUser);
-        } catch (IllegalArgumentException e) {
-            log.error("Ошибка при обновлении пользователя с ID: {}", user.getId());
-            throw new ValidationException("Пользователь с таким ID не найден.");
-        }
+        User updatedUser = userService.updateUser(user);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping
@@ -55,7 +49,7 @@ public class UserController {
         User user = userService.getUserById(id);
         if (user == null) {
             log.error("Пользователь с ID {} не найден", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // 404 Not Found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(user);
     }
@@ -64,14 +58,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();  //  204
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Добавление друга: пользователь {} добавляет {} в друзья", id, friendId);
-
-        // Проверка существования пользователей
         if (userService.getUserById(id) == null) {
             log.error("Пользователь с ID {} не найден", id);
             throw new ValidationException("Пользователь с ID " + id + " не найден.");
@@ -83,14 +75,14 @@ public class UserController {
         }
 
         userService.addFriend(id, friendId);
-        return ResponseEntity.ok().build();  // 200
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Удаление друга: пользователь {} удаляет {} из друзей", id, friendId);
         userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();  // 204
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/friends")

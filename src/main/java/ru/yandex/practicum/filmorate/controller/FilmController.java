@@ -3,15 +3,14 @@ package ru.yandex.practicum.filmorate.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 import java.util.HashMap;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -33,12 +32,8 @@ public class FilmController {
 
     @PutMapping
     public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
-        try {
-            Film updatedFilm = filmService.updateFilm(film);
-            return ResponseEntity.ok(updatedFilm);
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException("Фильм с таким ID не найден.");
-        }
+        Film updatedFilm = filmService.updateFilm(film);
+        return ResponseEntity.ok(updatedFilm);
     }
 
     @GetMapping
@@ -79,9 +74,6 @@ public class FilmController {
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> removeLike(@PathVariable int id, @PathVariable Long userId) {
-        if (!filmService.userExists(userId)) {
-            throw new ValidationException("Пользователь с ID " + userId + " не найден.");
-        }
         filmService.removeLike(id, userId);
         return ResponseEntity.noContent().build();
     }
