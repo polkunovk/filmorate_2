@@ -4,10 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,8 +59,19 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        user.addFriend((long) friendId);
-        friend.addFriend((long) userId);
+        user.addFriend((long) friendId, FriendshipStatus.PENDING);
+        friend.addFriend((long) userId, FriendshipStatus.PENDING);
+
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
+    }
+
+    public void confirmFriend(int userId, int friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+
+        user.addFriend((long) friendId, FriendshipStatus.CONFIRMED);
+        friend.addFriend((long) userId, FriendshipStatus.CONFIRMED);
 
         userStorage.updateUser(user);
         userStorage.updateUser(friend);
@@ -77,7 +90,7 @@ public class UserService {
 
     public List<User> getFriends(int userId) {
         User user = getUserById(userId);
-        Set<Long> friendIds = user.getFriends().stream().collect(Collectors.toSet());
+        Set<Long> friendIds = user.getFriends().keySet();
         return userStorage.getUsersByIds(friendIds);
     }
 
@@ -85,8 +98,8 @@ public class UserService {
         User user = getUserById(userId);
         User otherUser = getUserById(otherUserId);
 
-        Set<Long> commonFriendIds = user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
+        Set<Long> commonFriendIds = user.getFriends().keySet().stream()
+                .filter(otherUser.getFriends()::containsKey)
                 .collect(Collectors.toSet());
 
         return userStorage.getUsersByIds(commonFriendIds);

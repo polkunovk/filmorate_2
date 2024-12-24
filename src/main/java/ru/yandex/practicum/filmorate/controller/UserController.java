@@ -66,36 +66,41 @@ public class UserController {
         log.info("Добавление друга: пользователь {} добавляет {} в друзья", id, friendId);
         if (userService.getUserById(id) == null) {
             log.error("Пользователь с ID {} не найден", id);
-            throw new ValidationException("Пользователь с ID " + id + " не найден.");
+            throw new ValidationException("Пользователь не найден.");
         }
-
         if (userService.getUserById(friendId) == null) {
-            log.error("Друг с ID {} не найден", friendId);
-            throw new ValidationException("Друг с ID " + friendId + " не найден.");
+            log.error("Пользователь с ID {} не найден", friendId);
+            throw new ValidationException("Другой пользователь не найден.");
         }
-
         userService.addFriend(id, friendId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/friends/{friendId}/confirm")
+    public ResponseEntity<Void> confirmFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Подтверждение дружбы: пользователь {} подтверждает дружбу с {}", id, friendId);
+        userService.confirmFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
-        log.info("Удаление друга: пользователь {} удаляет {} из друзей", id, friendId);
+        log.info("Удаление друга: пользователь {} удаляет {}", id, friendId);
         userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<User>> getUserFriends(@PathVariable int id) {
-        log.info("Запрос друзей пользователя с ID: {}", id);
+    public ResponseEntity<List<User>> getFriends(@PathVariable int id) {
+        log.info("Запрос друзей пользователя с ID {}", id);
         List<User> friends = userService.getFriends(id);
         return ResponseEntity.ok(friends);
     }
 
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        log.info("Запрос общих друзей между пользователем {} и пользователем {}", id, otherId);
-        List<User> commonFriends = userService.getCommonFriends(id, otherId);
+    @GetMapping("/{id}/friends/common/{otherUserId}")
+    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherUserId) {
+        log.info("Запрос общих друзей между пользователем с ID {} и пользователем с ID {}", id, otherUserId);
+        List<User> commonFriends = userService.getCommonFriends(id, otherUserId);
         return ResponseEntity.ok(commonFriends);
     }
 }

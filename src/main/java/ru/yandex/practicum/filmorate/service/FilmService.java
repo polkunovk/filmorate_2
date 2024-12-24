@@ -78,6 +78,16 @@ public class FilmService {
             log.warn("Некорректная продолжительность фильма: {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
         }
+
+        if (film.getGenres() != null && film.getGenres().stream().anyMatch(String::isBlank)) {
+            log.warn("Некорректный жанр в списке: {}", film.getGenres());
+            throw new ValidationException("Жанры не могут содержать пустые значения.");
+        }
+
+        if (film.getMpa() == null) {
+            log.warn("Рейтинг MPA отсутствует.");
+            throw new ValidationException("Рейтинг MPA обязателен для фильма.");
+        }
     }
 
     public void addLike(int filmId, Long userId) {

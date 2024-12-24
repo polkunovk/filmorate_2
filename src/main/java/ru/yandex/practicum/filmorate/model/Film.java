@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import jakarta.validation.constraints.*;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Film.
- */
 @Data
 public class Film {
 
@@ -20,7 +18,7 @@ public class Film {
     @Size(max = 200, message = "Описание фильма не должно превышать 200 символов.")
     private String description;
 
-    @NotNull(message = "Дата релиза не может быть пусто .")
+    @NotNull(message = "Дата релиза не может быть пустой.")
     @PastOrPresent(message = "Дата релиза не может быть в будущем.")
     private LocalDate releaseDate;
 
@@ -28,6 +26,11 @@ public class Film {
     private int duration;
 
     private Set<Long> likes = new HashSet<>();
+
+    private Set<String> genres = new HashSet<>(); // Новое поле
+
+    @NotNull(message = "Рейтинг фильма не может быть пустым.")
+    private MpaRating mpa; // Рейтинг MPA
 
     public void addLike(Long userId) {
         likes.add(userId);
