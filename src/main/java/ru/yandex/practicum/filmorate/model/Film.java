@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import jakarta.validation.constraints.*;
-
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Film.
+ */
 @Data
 public class Film {
 
@@ -27,7 +29,7 @@ public class Film {
 
     private Set<Long> likes = new HashSet<>();
 
-    private Set<String> genres = new HashSet<>(); // Новое поле
+    private Set<String> genres = new HashSet<>(); // Новое поле, которое присутствует в ветке add-friends-likes
 
     @NotNull(message = "Рейтинг фильма не может быть пустым.")
     private MpaRating mpa; // Рейтинг MPA
@@ -44,5 +46,3 @@ public class Film {
         return likes.size();
     }
 }
-
-
