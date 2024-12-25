@@ -22,9 +22,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film.getGenres() == null) {
             film.setGenres(new HashSet<>());
         }
-        if (film.getMpa() == null) {
-            throw new IllegalArgumentException("Рейтинг MPA обязателен для фильма.");
-        }
+//        if (film.getMpa() == null) {
+//            throw new IllegalArgumentException("Рейтинг MPA обязателен для фильма.");
+//        }
         films.put(film.getId(), film);
         return film;
     }

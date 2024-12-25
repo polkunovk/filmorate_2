@@ -84,10 +84,10 @@ public class FilmService {
             throw new ValidationException("Жанры не могут содержать пустые значения.");
         }
 
-        if (film.getMpa() == null) {
-            log.warn("Рейтинг MPA отсутствует.");
-            throw new ValidationException("Рейтинг MPA обязателен для фильма.");
-        }
+//        if (film.getMpa() == null) {
+//            log.warn("Рейтинг MPA отсутствует.");
+//            throw new ValidationException("Рейтинг MPA обязателен для фильма.");
+//        }
     }
 
     public void addLike(int filmId, Long userId) {
