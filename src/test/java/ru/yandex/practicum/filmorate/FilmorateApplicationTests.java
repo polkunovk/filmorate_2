@@ -86,7 +86,7 @@ class FilmorateApplicationTests {
 		film.setDescription("Valid Description");
 		film.setReleaseDate(LocalDate.of(2000, 1, 1));
 		film.setDuration(120);
-		film.setMpa(MpaRating.G);  
+		film.setMpa(MpaRating.G);
 		violations = validator.validate(film);
 		assertTrue(violations.isEmpty(), "Фильм должен быть валидным.");
 
