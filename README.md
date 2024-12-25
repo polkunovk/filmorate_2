@@ -1,16 +1,13 @@
 # java-filmorate
-Template repository for Filmorate project.
+Template repository for the Filmorate project.
 
-## Диаграмма базы данных
+## Database Diagram
 
+![Database Diagram](photo/Untitled.png)
 
+## Example Query
 
-![Диаграмма базы данных](photo/Untitled.png)
-
-## Пример запроса 
-
-### Создание нового фильма в таблицу films
-
+### Adding a New Film to the `films` Table
 
 INSERT INTO films (name, description, release_date, duration)
-VALUES ('Властелин колец', 'Фэнтезийный фильм о приключениях хоббитов', '2001-12-19', 178);
+VALUES ('The Lord of the Rings', 'A fantasy movie about the adventures of hobbits', '2001-12-19', 178);
