@@ -173,7 +173,6 @@ class FilmorateApplicationTests {
 		film.setDuration(148);
 		film.setGenres(new HashSet<>(List.of("Sci-Fi", "Thriller")));
 		film.setMpa(MpaRating.PG_13);
-
 		assertEquals(MpaRating.PG_13, film.getMpa());
 	}
 
