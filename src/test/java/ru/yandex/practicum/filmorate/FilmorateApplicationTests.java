@@ -102,6 +102,7 @@ class FilmorateApplicationTests {
 		film.setDescription("Описание фильма");
 		film.setReleaseDate(LocalDate.of(2000, 1, 1));
 		film.setDuration(120);
+		film.setMpa(MpaRating.G);
 
 		Film createdFilm = filmController.addFilm(film).getBody();
 
