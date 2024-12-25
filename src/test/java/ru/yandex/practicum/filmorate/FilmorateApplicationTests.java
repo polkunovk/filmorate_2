@@ -78,6 +78,7 @@ class FilmorateApplicationTests {
 		assertFalse(violations.isEmpty(), "Продолжительность фильма должна быть положительным числом.");
 
 		film.setDuration(120);
+		film.setMpa(MpaRating.G);
 		violations = validator.validate(film);
 		assertTrue(violations.isEmpty(), "Фильм должен быть валидным.");
 
@@ -85,6 +86,7 @@ class FilmorateApplicationTests {
 		film.setDescription("Valid Description");
 		film.setReleaseDate(LocalDate.of(2000, 1, 1));
 		film.setDuration(120);
+		film.setMpa(MpaRating.G);  
 		violations = validator.validate(film);
 		assertTrue(violations.isEmpty(), "Фильм должен быть валидным.");
 
@@ -92,6 +94,7 @@ class FilmorateApplicationTests {
 		violations = validator.validate(film);
 		assertFalse(violations.isEmpty(), "Продолжительность фильма должна быть положительным числом.");
 	}
+
 
 	@Test
 	void filmNameDefaultTest() {
