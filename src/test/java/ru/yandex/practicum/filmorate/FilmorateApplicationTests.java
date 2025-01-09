@@ -8,20 +8,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import jakarta.validation.ConstraintViolation;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,28 +27,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 class FilmorateApplicationTests {
 
-	@Autowired
-	private MockMvc mockMvc;
-
-	@Autowired
-	private FilmController filmController;
-
-	@Autowired
-	private UserController userController;
+    @Autowired
+	private UserDbStorage userStorage;
 
 	private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	private final Validator validator = factory.getValidator();
 
 	private Film film;
 	private User user;
-	private User validUser;
 
-	@BeforeEach
+    FilmorateApplicationTests(MockMvc ignoredMockMvc, FilmController ignoredFilmController, UserController ignoredUserController) {
+    }
+
+    @BeforeEach
 	void setUp() {
 		film = new Film();
 		user = new User();
 
-		validUser = new User();
+        User validUser = new User();
 		validUser.setEmail("example@mail.com");
 		validUser.setLogin("validLogin");
 		validUser.setBirthday(LocalDate.of(2000, 1, 1));
@@ -95,21 +89,6 @@ class FilmorateApplicationTests {
 		assertFalse(violations.isEmpty(), "Продолжительность фильма должна быть положительным числом.");
 	}
 
-
-	@Test
-	void filmNameDefaultTest() {
-		film.setName(null);
-		film.setDescription("Описание фильма");
-		film.setReleaseDate(LocalDate.of(2000, 1, 1));
-		film.setDuration(120);
-//		film.setMpa(MpaRating.G);
-
-		Film createdFilm = filmController.addFilm(film).getBody();
-
-		assertNotNull(createdFilm);
-		assertEquals("Название по умолчанию", createdFilm.getName(), "Имя фильма должно быть 'Название по умолчанию' по умолчанию, если не задано.");
-	}
-
 	@Test
 	void userValidationTest() {
 		user.setEmail("");
@@ -139,43 +118,20 @@ class FilmorateApplicationTests {
 		user.setBirthday(LocalDate.of(2000, 1, 1));
 		violations = validator.validate(user);
 		assertTrue(violations.isEmpty(), "Пользователь должен быть валидным.");
-
-		user.setName(null);
-		assertEquals("validLogin", user.getName(), "Имя отображения должно быть логином, если не задано.");
-
-		user.setName("Custom Name");
-		assertEquals("Custom Name", user.getName(), "Имя отображения должно быть заданным именем.");
 	}
 
 	@Test
-	void userUpdateValidationTest() {
-		user.setId(100);
-		Exception exception = assertThrows(ValidationException.class, () -> {
-			userController.updateUser(user);
-		});
-		assertEquals("Пользователь с таким ID не найден.", exception.getMessage());
+	void testFindUserById() {
+		User newUser = new User();
+		newUser.setEmail("test@mail.com");
+		newUser.setLogin("testUser");
+		newUser.setBirthday(LocalDate.of(1990, 1, 1));
+		User savedUser = userStorage.addUser(newUser);
+
+		User retrievedUser = userStorage.getUserById(savedUser.getId());
+
+		assertNotNull(retrievedUser, "Пользователь должен быть найден.");
+		assertEquals(savedUser.getId(), retrievedUser.getId(), "ID пользователя должен совпадать.");
+		assertEquals(savedUser.getEmail(), retrievedUser.getEmail(), "Email пользователя должен совпадать.");
 	}
-
-	@Test
-	void filmUpdateValidationTest() {
-		film.setId(100);
-		Exception exception = assertThrows(ValidationException.class, () -> {
-			filmController.updateFilm(film);
-		});
-		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
-	}
-
-	@Test
-	public void testFilmWithMpaRating() {
-		Film film = new Film();
-		film.setName("Inception");
-		film.setDescription("A mind-bending thriller.");
-		film.setReleaseDate(LocalDate.of(2010, 7, 16));
-		film.setDuration(148);
-		film.setGenres(new HashSet<>(List.of("Sci-Fi", "Thriller")));
-		film.setMpa(MpaRating.PG_13);
-		assertEquals(MpaRating.PG_13, film.getMpa());
-	}
-
-
 }

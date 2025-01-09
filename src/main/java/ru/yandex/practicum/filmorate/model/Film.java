@@ -31,7 +31,6 @@ public class Film {
 
     private Set<String> genres = new HashSet<>();
 
-//    @NotNull(message = "Рейтинг фильма не может быть пустым.")
     private MpaRating mpa;
 
     public void addLike(Long userId) {
