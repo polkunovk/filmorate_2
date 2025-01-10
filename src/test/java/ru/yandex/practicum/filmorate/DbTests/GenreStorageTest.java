@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.DbTests;
 
-
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,41 +10,31 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.dal.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.GenreRowMapper;
 
-import java.util.Optional;
+import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({GenreStorage.class,
-        GenreRowMapper.class,
-})
+@Import({GenreStorage.class, GenreRowMapper.class})
 public class GenreStorageTest {
     private final GenreStorage genreStorage;
 
     @Test
-    public void testFindGenreById() {
+    public void shouldFindGenreById() {
+        Genre genre = genreStorage.findById(1).orElse(null);
 
-        Optional<Genre> filmOptional = genreStorage.findById(1);
-
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 1)
-                );
+        assertThat(genre).isNotNull();
+        assertThat(genre.getId()).isEqualTo(1);
     }
 
     @Test
-    public void testFindAllGenres() {
+    public void shouldFindAllGenres() {
+        List<Genre> genres = genreStorage.findAll();
+        Genre genre = genres.size() > 3 ? genres.get(3) : null;
 
-        Optional<Genre> filmOptional = Optional.of(genreStorage.findAll().get(3));
-
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", 4)
-                );
+        assertThat(genre).isNotNull();
+        assertThat(genre.getId()).isEqualTo(4);
     }
-
 }

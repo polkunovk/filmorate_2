@@ -14,7 +14,7 @@ import ru.yandex.practicum.filmorate.storage.dal.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.FriendsIdsMapper;
 import ru.yandex.practicum.filmorate.storage.dal.mappers.UserRowMapper;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -25,68 +25,76 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
         FriendsIdsStorage.class,
         FriendsIdsMapper.class,
 })
-
 public class FriendsIdsStorageTest {
-    private final FriendsIdsStorage friendsIdsStorage;
-    private final UserDbStorage userDbStorage;
+    private final FriendsIdsStorage idsStorage;
+    private final UserDbStorage storage;
 
     @BeforeEach
-    public void beforeEach() {
-
-        User user = new User();
-        user.setName("testName");
-        user.setLogin("testLogin");
-        user.setEmail("testMail");
+    public void setup() {
+        User user1 = new User();
+        user1.setName("testName");
+        user1.setLogin("testLogin");
+        user1.setEmail("testMail");
 
         User user2 = new User();
         user2.setName("testName2");
         user2.setLogin("testLogin2");
         user2.setEmail("testMail2");
 
-        userDbStorage.addUser(user);
-        userDbStorage.addUser(user2);
+        storage.addUser(user1);
+        storage.addUser(user2);
     }
 
     @Test
-    public void addFriendTest() {
-        friendsIdsStorage.addFriend(1,2);
+    public void shouldAddFriend() {
+        int userId1 = storage.findAll().get(0).getId();
+        int userId2 = storage.findAll().get(1).getId();
 
-        FriendsIds friendsIds = friendsIdsStorage.findUserFriends(1).get(0);
+        assertThat(storage.findById(userId1)).isPresent();
+        assertThat(storage.findById(userId2)).isPresent();
 
-        assertThat(friendsIds).isNotNull();
+        idsStorage.addFriend(userId1, userId2);
+
+        FriendsIds friend = idsStorage.findUserFriends(userId1).get(0);
+
+        assertThat(friend).isNotNull();
     }
 
     @Test
-    public void findAllFriendsIdsTest() {
+    public void shouldFindAllFriends() {
+        int firstUserId = storage.findAll().get(0).getId();
+        int secondUserId = storage.findAll().get(1).getId();
 
-        int userId1 = userDbStorage.findAll().get(0).getId();
-        int userId2 = userDbStorage.findAll().get(1).getId();
+        assertThat(storage.findById(firstUserId)).isPresent();
+        assertThat(storage.findById(secondUserId)).isPresent();
 
-        friendsIdsStorage.addFriend(userId1,userId2);
-        friendsIdsStorage.addFriend(userId2,userId1);
+        idsStorage.addFriend(firstUserId, secondUserId);
+        idsStorage.addFriend(secondUserId, firstUserId);
 
-        FriendsIds friendIds1 = friendsIdsStorage.findAll().get(0);
-        FriendsIds friendIds2 = friendsIdsStorage.findAll().get(1);
-        int friendIdListSize = friendsIdsStorage.findAll().size();
+        FriendsIds firstFriend = idsStorage.findAll().get(0);
+        FriendsIds secondFriend = idsStorage.findAll().get(1);
+        int totalFriends = idsStorage.findAll().size();
 
-
-        assertThat(friendIds2).isNotNull();
-        assertThat(friendIds1).isNotNull();
-        assertThat(friendIdListSize).isEqualTo(2);
+        assertThat(firstFriend).isNotNull();
+        assertThat(secondFriend).isNotNull();
+        assertThat(totalFriends).isEqualTo(2);
     }
 
     @Test
-    public void deleteFriendTest() {
-        int userId1 = userDbStorage.findAll().get(0).getId();
-        int userId2 = userDbStorage.findAll().get(1).getId();
+    public void shouldDeleteFriend() {
+        int firstUserId = storage.findAll().get(0).getId();
+        int secondUserId = storage.findAll().get(1).getId();
 
-        friendsIdsStorage.addFriend(userId1,userId2);
-        friendsIdsStorage.addFriend(userId2,userId1);
+        assertThat(storage.findById(firstUserId)).isPresent();
+        assertThat(storage.findById(secondUserId)).isPresent();
 
-        friendsIdsStorage.deleteLFriend(userId2, userId1);
+        idsStorage.addFriend(firstUserId, secondUserId);
+        idsStorage.addFriend(secondUserId, firstUserId);
 
-        int friendIdsSize = friendsIdsStorage.findAll().size();
+        idsStorage.deleteLFriend(secondUserId, firstUserId);
 
-        assertThat(friendIdsSize).isEqualTo(1);
+        int remainingFriends = idsStorage.findAll().size();
+
+        assertThat(remainingFriends).isEqualTo(1);
     }
 }

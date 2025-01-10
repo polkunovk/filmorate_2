@@ -23,7 +23,7 @@ import ru.yandex.practicum.filmorate.storage.dal.mappers.MpaRowMapper;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -45,8 +45,7 @@ class FilmDbTest {
     private final FilmDbStorage filmDbStorage;
 
     @BeforeEach
-    public void beforeEach() {
-
+    void setUp() {
         Mpa mpa = new Mpa();
         mpa.setId(1);
         mpa.setName("G");
@@ -62,32 +61,26 @@ class FilmDbTest {
     }
 
     @Test
-    public void testFindFilmById() {
+    void shouldFindFilmById() {
+        int filmId = filmDbStorage.findAll().get(0).getId();
+        Optional<Film> foundFilm = filmDbStorage.findById(filmId);
 
-        int id = filmDbStorage.findAll().get(0).getId();
-        Optional<Film> filmOptional = filmDbStorage.findById(id);
-
-        assertThat(filmOptional)
+        assertThat(foundFilm)
                 .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("id", id)
-                );
+                .hasValueSatisfying(film -> assertThat(film).hasFieldOrPropertyWithValue("id", filmId));
     }
 
     @Test
-    public void testFindFilmByName() {
+    void shouldFindFilmByName() {
+        Optional<Film> foundFilm = filmDbStorage.findByName("TestFilm");
 
-        Optional<Film> filmOptional = filmDbStorage.findByName("TestFilm");
-
-        assertThat(filmOptional)
+        assertThat(foundFilm)
                 .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("name", "TestFilm")
-                );
+                .hasValueSatisfying(film -> assertThat(film).hasFieldOrPropertyWithValue("name", "TestFilm"));
     }
 
     @Test
-    public void testFindAllFilms() {
+    void shouldFindAllFilms() {
         Mpa mpa = new Mpa();
         mpa.setId(1);
         mpa.setName("G");
@@ -101,25 +94,14 @@ class FilmDbTest {
 
         filmDbStorage.addFilm(film2);
 
-        Optional<Film> filmOptional = Optional.of(filmDbStorage.findAll().get(0));
-
-        assertThat(filmOptional)
-                .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("name", "TestFilm")
-                );
-        Optional<Film> filmOptional2 = Optional.of(filmDbStorage.findAll().get(1));
-
-        assertThat(filmOptional2)
-                .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("name", "TestFilm2")
-                );
+        assertThat(filmDbStorage.findAll())
+                .hasSize(2)
+                .extracting(Film::getName)
+                .contains("TestFilm", "TestFilm2");
     }
 
     @Test
-    public void testAddFilm() {
-
+    void shouldAddFilm() {
         Mpa mpa = new Mpa();
         mpa.setId(1);
         mpa.setName("G");
@@ -133,26 +115,24 @@ class FilmDbTest {
 
         filmDbStorage.addFilm(film);
 
-        Optional<Film> filmOptional = filmDbStorage.findByName("TestFilm1");
+        Optional<Film> foundFilm = filmDbStorage.findByName("TestFilm1");
 
-        assertThat(filmOptional)
+        assertThat(foundFilm)
                 .isPresent()
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("name", "TestFilm1")
-                );
+                .hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("name", "TestFilm1"));
     }
 
     @Test
-    public void testUpdateFilm() {
+    void shouldUpdateFilm() {
+        Film filmToUpdate = filmDbStorage.findAll().get(0);
+        filmToUpdate.setName("UpdatedName");
 
-        Film updatedFilm = filmDbStorage.findAll().get(0);
+        filmDbStorage.addFilm(filmToUpdate);
 
-        updatedFilm.setName("updateName");
+        Optional<Film> updatedFilm = filmDbStorage.findById(filmToUpdate.getId());
 
-        Optional<Film> newFilm = Optional.of(filmDbStorage.findAll().get(0));
-        assertThat(newFilm)
-                .hasValueSatisfying(user ->
-                        assertThat(user).hasFieldOrPropertyWithValue("name", "TestFilm")
-                );
+        assertThat(updatedFilm)
+                .isPresent()
+                .hasValueSatisfying(film -> assertThat(film).hasFieldOrPropertyWithValue("name", "UpdatedName"));
     }
 }
