@@ -15,71 +15,61 @@ import java.util.Optional;
 @Repository
 @Slf4j
 public class UserDbStorage extends BaseStorage<User> implements UserStorage {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM \"USER\"";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM \"USER\" WHERE USER_ID = ?";
-    private static final String INSERT_QUERY = "INSERT INTO \"USER\"(NAME, LOGIN, EMAIL, BIRTHDAY)" +
-            "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE \"USER\" SET NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? " +
-            "WHERE USER_ID = ?";
-    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM \"USER\" WHERE EMAIL = ?";
-    private static final String FIND_BY_LOGIN_QUERY = "SELECT * FROM \"USER\" WHERE LOGIN = ?";
+    private static final String GET_ALL_USERS_QUERY = "SELECT * FROM \"USER\"";
+    private static final String GET_USER_BY_ID_QUERY = "SELECT * FROM \"USER\" WHERE USER_ID = ?";
+    private static final String ADD_USER_QUERY = "INSERT INTO \"USER\"(NAME, LOGIN, EMAIL, BIRTHDAY) VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_USER_QUERY = "UPDATE \"USER\" SET NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? WHERE USER_ID = ?";
+    private static final String GET_USER_BY_EMAIL_QUERY = "SELECT * FROM \"USER\" WHERE EMAIL = ?";
+    private static final String GET_USER_BY_LOGIN_QUERY = "SELECT * FROM \"USER\" WHERE LOGIN = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
 
     public Optional<User> findById(int id) {
-        return findOne(FIND_BY_ID_QUERY, id);
+        return findOne(GET_USER_BY_ID_QUERY, id);
     }
 
     public Optional<User> findByEmail(String email) {
-        return findOne(FIND_BY_EMAIL_QUERY, email);
+        return findOne(GET_USER_BY_EMAIL_QUERY, email);
     }
 
     public Optional<User> findByLogin(String login) {
-        return findOne(FIND_BY_LOGIN_QUERY, login);
+        return findOne(GET_USER_BY_LOGIN_QUERY, login);
     }
 
     public List<User> findAll() {
-        return findMany(FIND_ALL_QUERY);
+        return findMany(GET_ALL_USERS_QUERY);
     }
 
     public User addUser(User user) {
-        String login;
         if (user.getLogin() == null) {
-            login = user.getName() + "-" + user.getEmail();
-            user.setLogin(login);
-            log.warn("Логин не передан, он будет сгенирирован автоматически.");
+            String generatedLogin = generateLogin(user);
+            user.setLogin(generatedLogin);
+            log.warn("Логин не передан, он будет сгенерирован автоматически.");
         }
 
-        int id = insert(INSERT_QUERY,
-                user.getName(),
-                user.getLogin(),
-                user.getEmail(),
-                user.getBirthday()
-        );
+        int id = insert(ADD_USER_QUERY, user.getName(), user.getLogin(), user.getEmail(), user.getBirthday());
         user.setId(id);
-        log.info("Создан новый пользователь c id: {}", user.getId());
+        log.info("Создан новый пользователь с id: {}", user.getId());
 
         return user;
     }
 
     public User updateUser(User user) {
-        String login;
         if (user.getLogin() == null) {
-            login = user.getName() + "-" + user.getEmail();
-            user.setLogin(login);
-            log.warn("Логин не передан, он будет сгенирирован автоматически.");
+            String generatedLogin = generateLogin(user);
+            user.setLogin(generatedLogin);
+            log.warn("Логин не передан, он будет сгенерирован автоматически.");
         }
-        update(UPDATE_QUERY,
-                user.getName(),
-                user.getLogin(),
-                user.getEmail(),
-                user.getBirthday(),
-                user.getId()
-        );
 
-        log.info("Пользователь c id: {} обновлен", user.getId());
+        update(UPDATE_USER_QUERY, user.getName(), user.getLogin(), user.getEmail(), user.getBirthday(), user.getId());
+        log.info("Пользователь с id: {} обновлен", user.getId());
+
         return user;
+    }
+
+    private String generateLogin(User user) {
+        return user.getName() + "-" + user.getEmail();
     }
 }
