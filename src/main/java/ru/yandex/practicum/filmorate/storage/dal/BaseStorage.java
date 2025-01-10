@@ -61,5 +61,4 @@ public class BaseStorage<T> {
         int rowsDeleted = jdbc.update(query, params);
         return rowsDeleted > 0;
     }
-
 }
