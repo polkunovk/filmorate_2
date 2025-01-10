@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -17,6 +19,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         film.setId(currentId++);
+        if (film.getGenres() == null) {
+            film.setGenres(new HashSet<>());
+        }
+//        if (film.getMpa() == null) {
+//            throw new IllegalArgumentException("Рейтинг MPA обязателен для фильма.");
+//        }
         films.put(film.getId(), film);
         return film;
     }

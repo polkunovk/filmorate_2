@@ -20,7 +20,7 @@ public class Film {
     @Size(max = 200, message = "Описание фильма не должно превышать 200 символов.")
     private String description;
 
-    @NotNull(message = "Дата релиза не может быть пусто .")
+    @NotNull(message = "Дата релиза не может быть пустой.")
     @PastOrPresent(message = "Дата релиза не может быть в будущем.")
     private LocalDate releaseDate;
 
@@ -28,6 +28,11 @@ public class Film {
     private int duration;
 
     private Set<Long> likes = new HashSet<>();
+
+    private Set<String> genres = new HashSet<>();
+
+//    @NotNull(message = "Рейтинг фильма не может быть пустым.")
+    private MpaRating mpa;
 
     public void addLike(Long userId) {
         likes.add(userId);
@@ -41,6 +46,7 @@ public class Film {
         return likes.size();
     }
 }
+
 
 
 

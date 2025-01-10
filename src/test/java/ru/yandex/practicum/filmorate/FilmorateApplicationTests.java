@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import jakarta.validation.Validation;
@@ -18,6 +19,8 @@ import jakarta.validation.ValidatorFactory;
 import jakarta.validation.ConstraintViolation;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,6 +78,7 @@ class FilmorateApplicationTests {
 		assertFalse(violations.isEmpty(), "Продолжительность фильма должна быть положительным числом.");
 
 		film.setDuration(120);
+		film.setMpa(MpaRating.G);
 		violations = validator.validate(film);
 		assertTrue(violations.isEmpty(), "Фильм должен быть валидным.");
 
@@ -82,6 +86,7 @@ class FilmorateApplicationTests {
 		film.setDescription("Valid Description");
 		film.setReleaseDate(LocalDate.of(2000, 1, 1));
 		film.setDuration(120);
+		film.setMpa(MpaRating.G);
 		violations = validator.validate(film);
 		assertTrue(violations.isEmpty(), "Фильм должен быть валидным.");
 
@@ -90,12 +95,14 @@ class FilmorateApplicationTests {
 		assertFalse(violations.isEmpty(), "Продолжительность фильма должна быть положительным числом.");
 	}
 
+
 	@Test
 	void filmNameDefaultTest() {
 		film.setName(null);
 		film.setDescription("Описание фильма");
 		film.setReleaseDate(LocalDate.of(2000, 1, 1));
 		film.setDuration(120);
+//		film.setMpa(MpaRating.G);
 
 		Film createdFilm = filmController.addFilm(film).getBody();
 
@@ -157,5 +164,18 @@ class FilmorateApplicationTests {
 		});
 		assertEquals("Фильм с таким ID не найден.", exception.getMessage());
 	}
+
+	@Test
+	public void testFilmWithMpaRating() {
+		Film film = new Film();
+		film.setName("Inception");
+		film.setDescription("A mind-bending thriller.");
+		film.setReleaseDate(LocalDate.of(2010, 7, 16));
+		film.setDuration(148);
+		film.setGenres(new HashSet<>(List.of("Sci-Fi", "Thriller")));
+		film.setMpa(MpaRating.PG_13);
+		assertEquals(MpaRating.PG_13, film.getMpa());
+	}
+
 
 }

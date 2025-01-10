@@ -3,12 +3,9 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * User.
- */
 @Data
 public class User {
 
@@ -28,7 +25,7 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
-    private Set<Long> friends = new HashSet<>();
+    private Map<Long, FriendshipStatus> friends = new HashMap<>();
 
     public String getName() {
         if (name == null || name.isBlank()) {
@@ -41,15 +38,15 @@ public class User {
         this.name = name;
     }
 
-    public void addFriend(Long friendId) {
-        friends.add(friendId);
+    public void addFriend(Long friendId, FriendshipStatus status) {
+        friends.put(friendId, status);
     }
 
     public void removeFriend(Long friendId) {
         friends.remove(friendId);
     }
 
-    public Set<Long> getFriends() {
+    public Map<Long, FriendshipStatus> getFriends() {
         return friends;
     }
 }
