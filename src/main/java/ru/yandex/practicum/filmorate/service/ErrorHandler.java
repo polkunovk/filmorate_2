@@ -12,45 +12,46 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 @RestControllerAdvice
 public class ErrorHandler {
-    @ExceptionHandler
+
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(final NotFoundException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorDetails handleNotFound(NotFoundException ex) {
+        return new ErrorDetails(ex.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(InternalServerException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleInternalServerException(final InternalServerException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorDetails handleInternalServerException(InternalServerException ex) {
+        return new ErrorDetails(ex.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleParameterNotValidException(final ValidationException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorDetails handleValidationException(ValidationException ex) {
+        return new ErrorDetails(ex.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ConditionsNotMetException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public ErrorResponse handleConditionsNotMetException(final ConditionsNotMetException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorDetails handleConditionsNotMetException(ConditionsNotMetException ex) {
+        return new ErrorDetails(ex.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(DuplicatedDataException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflictError(final DuplicatedDataException e) {
-        return new ErrorResponse(e.getMessage());
+    public ErrorDetails handleDuplicatedDataException(DuplicatedDataException ex) {
+        return new ErrorDetails(ex.getMessage());
     }
 
-    public class ErrorResponse {
-        private final String error;
+    public static class ErrorDetails {
+        private final String message;
 
-        public ErrorResponse(String error) {
-            this.error = error;
+        public ErrorDetails(String message) {
+            this.message = message;
         }
 
-        public String getError() {
-            return error;
+        public String getMessage() {
+            return message;
         }
     }
 }

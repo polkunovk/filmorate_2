@@ -15,9 +15,7 @@ import ru.yandex.practicum.filmorate.storage.dto.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.storage.dto.UserDto;
 import ru.yandex.practicum.filmorate.storage.mapper.UserMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,65 +26,20 @@ public class UserService {
     private final FriendsIdsStorage friendsIdsStorage;
 
     public UserDto addUser(NewUserRequest request) {
-        if (request.getEmail() == null || request.getEmail().isEmpty()) {
-            throw new ConditionsNotMetException("Email должен быть указан");
-        }
-
-        Optional<User> alreadyExistEmail = userDbStorage.findByEmail(request.getEmail());
-        if (alreadyExistEmail.isPresent()) {
-            throw new ValidationException("Электронная почта уже используется");
-        }
-
-        if (request.getName() == null || request.getName().isEmpty()) {
-            throw new ConditionsNotMetException("Имя должено быть указано");
-        }
-
-        Optional<User> alreadyExistLogin = userDbStorage.findByLogin(request.getLogin());
-        if (alreadyExistLogin.isPresent()) {
-            throw new ValidationException("Такой логин уже существует.");
-        }
-
+        validateUserRequest(request);
         User user = UserMapper.mapToUser(request);
         user = userDbStorage.addUser(user);
-
         log.info("Создан новый пользователь c id: {}", user.getId());
         return UserMapper.mapToUserDto(user);
     }
 
     public UserDto updateUser(UpdateUserRequest request) {
-        if (request.getId() == null) {
-            log.error("Id не куказан.");
-            throw new ValidationException("Id должен быть указан");
-        }
-
-        Optional<User> existUser = userDbStorage.findById(request.getId());
-        if (existUser.isEmpty()) {
-            log.error("User с id = {} не найден", request.getId());
-            throw new NotFoundException("User с id = " + request.getId() + " не найден");
-        }
-
-        if (request.getLogin() != null) {
-            Optional<User> alreadyExistLogin = userDbStorage.findByLogin(request.getLogin());
-            if (alreadyExistLogin.isPresent()) {
-                throw new ValidationException("Такой логин уже существует.");
-            }
-        }
-
-        if (request.getEmail() != null) {
-            Optional<User> alreadyExistEmail = userDbStorage.findByEmail(request.getEmail());
-            if (alreadyExistEmail.isPresent()) {
-                throw new ValidationException("Электронная почта уже используется");
-            }
-        }
-
-        User updateUser = userDbStorage.findById(request.getId())
-                .map(user -> UserMapper.updateUserFields(user, request))
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
-        updateUser = userDbStorage.updateUser(updateUser);
+        User user = validateUserExistenceAndReturn(request.getId());
+        validateUniqueFields(request);
+        User updatedUser = UserMapper.updateUserFields(user, request);
+        updatedUser = userDbStorage.updateUser(updatedUser);
         log.info("Пользователь c id: {} обновлен", request.getId());
-
-        return UserMapper.mapToUserDto(updateUser);
+        return UserMapper.mapToUserDto(updatedUser);
     }
 
     public List<UserDto> getUsers() {
@@ -98,106 +51,93 @@ public class UserService {
     }
 
     public UserDto getUserById(Integer userId) {
-        return UserMapper.mapToUserDto(userDbStorage.findById(userId).get());
+        return UserMapper.mapToUserDto(userDbStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден")));
     }
 
     public UserDto getUserByLogin(String login) {
-        return UserMapper.mapToUserDto(userDbStorage.findByLogin(login).get());
+        return UserMapper.mapToUserDto(userDbStorage.findByLogin(login).orElseThrow(() -> new NotFoundException("Пользователь не найден")));
     }
 
     public UserDto getUserByEmail(String email) {
-        return UserMapper.mapToUserDto(userDbStorage.findByEmail(email).get());
+        return UserMapper.mapToUserDto(userDbStorage.findByEmail(email).orElseThrow(() -> new NotFoundException("Пользователь не найден")));
     }
 
     public UserDto addFriend(Integer userId, Integer friendId) {
-        Optional<User> existUser = userDbStorage.findById(userId);
-        if (existUser.isEmpty()) {
-            throw new NotFoundException("userId не найден.");
-        }
-
-        Optional<User> existFriend = userDbStorage.findById(friendId);
-        if (existFriend.isEmpty()) {
-            throw new NotFoundException("friendId не найден.");
-        }
-
+        validateUserExistence(userId, friendId);
         friendsIdsStorage.addFriend(userId, friendId);
-
         log.trace("Пользователь c id: {} добавил в друзья пользователя с id: {}", userId, friendId);
-
         return getUserById(userId);
     }
 
     public UserDto deleteFriend(Integer userId, Integer friendId) {
-        Optional<User> existUser = userDbStorage.findById(userId);
-        if (existUser.isEmpty()) {
-            log.error("Переданный userId не существует.");
-            throw new NotFoundException("userId не найден.");
-        }
-
-        Optional<User> existFriend = userDbStorage.findById(friendId);
-        if (existFriend.isEmpty()) {
-            log.error("Переданный friendId не существует.");
-            throw new NotFoundException("friendId не найден.");
-        }
-
-        List<FriendsIds> friends = friendsIdsStorage.findUserFriends(userId);
-        List<Integer> usersFriendIds = new ArrayList<>();
-
-        friends.stream()
-                .forEach(friend -> {
-                    usersFriendIds.add(friend.getFriendId());
-                });
-
-        if (!usersFriendIds.contains(friendId)) {
-            log.trace("Данного пользователя небыло в друзьях.");
-        } else {
+        validateUserExistence(userId, friendId);
+        List<Integer> friendsIds = friendsIdsStorage.findUserFriends(userId)
+                .stream()
+                .map(FriendsIds::getFriendId)
+                .collect(Collectors.toList());
+        if (friendsIds.contains(friendId)) {
             friendsIdsStorage.deleteLFriend(friendId, userId);
+            log.trace("Пользователь id: {} удален из друзей у пользователя с id: {}", friendId, userId);
+        } else {
+            log.trace("Пользователь с id: {} не был другом пользователя с id: {}", friendId, userId);
         }
-
-        log.trace("Пользователь id: {} удалены из друзей у пользователя с id: {}", friendId, userId);
-
         return getUserById(userId);
     }
 
     public List<UserDto> getFriends(Integer userId) {
-        Optional<User> existUser = userDbStorage.findById(userId);
-        if (existUser.isEmpty()) {
-            log.error("Переданный userId не существует.");
-            throw new NotFoundException("userId не найден.");
-        }
-
-        List<Integer> friendsIds = new ArrayList<>();
-        List<UserDto> friends = new ArrayList<>();
-        List<FriendsIds> friendsIdsObjects = friendsIdsStorage.findUserFriends(userId);
-
-        friendsIdsObjects.stream().forEach(friendObject -> friendsIds.add(friendObject.getFriendId()));
-
-        friendsIds.stream().forEach(friendId -> friends.add(getUserById(friendId)));
-
-        return friends;
+        validateUserExistence(userId);
+        List<Integer> friendsIds = friendsIdsStorage.findUserFriends(userId)
+                .stream()
+                .map(FriendsIds::getFriendId)
+                .collect(Collectors.toList());
+        return friendsIds.stream()
+                .map(this::getUserById)
+                .collect(Collectors.toList());
     }
 
     public List<UserDto> commonFriends(Integer userId, Integer otherId) {
-        Optional<User> existUser = userDbStorage.findById(userId);
-        if (existUser.isEmpty()) {
-            log.error("Переданный userId не существует.");
-            throw new NotFoundException("userId не найден.");
-        }
-
-        Optional<User> existOtherUser = userDbStorage.findById(otherId);
-        if (existOtherUser.isEmpty()) {
-            log.error("Переданный otherId не существует.");
-            throw new NotFoundException("otherId не найден.");
-        }
-
-        List<UserDto> userfriendsList = getFriends(userId);
-        List<UserDto> otherUserfriendsList = getFriends(otherId);
-
-        userfriendsList.retainAll(otherUserfriendsList);
-
+        validateUserExistence(userId, otherId);
+        Set<UserDto> userFriends = new HashSet<>(getFriends(userId));
+        Set<UserDto> otherUserFriends = new HashSet<>(getFriends(otherId));
+        userFriends.retainAll(otherUserFriends);
         log.info("Список общих друзей пользователей с id: {} и {} сформирован.", userId, otherId);
+        return new ArrayList<>(userFriends);
+    }
 
-        return userfriendsList;
+    private void validateUserRequest(NewUserRequest request) {
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new ConditionsNotMetException("Email должен быть указан");
+        }
+        if (userDbStorage.findByEmail(request.getEmail()).isPresent()) {
+            throw new ValidationException("Электронная почта уже используется");
+        }
+        if (request.getName() == null || request.getName().isEmpty()) {
+            throw new ConditionsNotMetException("Имя должно быть указано");
+        }
+        if (userDbStorage.findByLogin(request.getLogin()).isPresent()) {
+            throw new ValidationException("Такой логин уже существует.");
+        }
+    }
+
+    private void validateUniqueFields(UpdateUserRequest request) {
+        if (request.getLogin() != null && userDbStorage.findByLogin(request.getLogin()).isPresent()) {
+            throw new ValidationException("Такой логин уже существует.");
+        }
+        if (request.getEmail() != null && userDbStorage.findByEmail(request.getEmail()).isPresent()) {
+            throw new ValidationException("Электронная почта уже используется");
+        }
+    }
+
+    private void validateUserExistence(Integer... userIds) {
+        for (Integer id : userIds) {
+            if (userDbStorage.findById(id).isEmpty()) {
+                log.error("Пользователь с id: {} не найден.", id);
+                throw new NotFoundException("Пользователь с id: " + id + " не найден");
+            }
+        }
+    }
+
+    private User validateUserExistenceAndReturn(Integer userId) {
+        return userDbStorage.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
     }
 }
-
