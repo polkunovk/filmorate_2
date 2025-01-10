@@ -1,17 +1,14 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.storage.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
-public class User {
+public class NewUserRequest {
     private Integer id;
     @NotBlank
     @Email
@@ -19,8 +16,6 @@ public class User {
     private String login;
     @NotBlank
     private String name;
-    @NotNull
     @Past
     private LocalDate birthday;
-    private Set<Integer> friendsId = new HashSet<>();
 }

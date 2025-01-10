@@ -1,48 +1,57 @@
 package ru.yandex.practicum.filmorate.storage.mapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.storage.dto.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.storage.dto.UserDto;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
-
-    public static User mapToUser(String email, String login, String name, LocalDate birthday) {
+    public static User mapToUser(NewUserRequest request) {
         User user = new User();
-        user.setEmail(email);
-        user.setLogin(login);
-        user.setName(name == null || name.isBlank() ? login : name);
-        user.setBirthday(birthday);
-        user.setFriends(new HashMap<>());
+
+        user.setLogin(request.getLogin());
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setBirthday(request.getBirthday());
+
         return user;
     }
 
-    public static User updateUserFields(User user, Map<String, Object> updateData) {
-        if (updateData.containsKey("email")) {
-            user.setEmail((String) updateData.get("email"));
-        }
-        if (updateData.containsKey("login")) {
-            user.setLogin((String) updateData.get("login"));
-        }
-        if (updateData.containsKey("name")) {
-            String name = (String) updateData.get("name");
-            user.setName(name == null || name.isBlank() ? user.getLogin() : name);
-        }
-        if (updateData.containsKey("birthday")) {
-            user.setBirthday((LocalDate) updateData.get("birthday"));
-        }
-        return user;
-    }
+    public static UserDto mapToUserDto(User user) {
+        UserDto userDto = new UserDto();
 
-    public static Map<String, Object> mapToUserDto(User user) {
-        Map<String, Object> userDto = new HashMap<>();
-        userDto.put("id", user.getId());
-        userDto.put("email", user.getEmail());
-        userDto.put("login", user.getLogin());
-        userDto.put("name", user.getName());
-        userDto.put("birthday", user.getBirthday());
-        userDto.put("friends", user.getFriends());
+        userDto.setId(user.getId());
+        userDto.setLogin(user.getLogin());
+        userDto.setName(user.getName());
+        userDto.setEmail(user.getEmail());
+        userDto.setBirthday(user.getBirthday());
+        userDto.setFriendsId(user.getFriendsId());
+
         return userDto;
     }
+
+    public static User updateUserFields(User user, UpdateUserRequest request) {
+        if (request.hasLogin()) {
+            user.setLogin(request.getLogin());
+        }
+
+        if (request.hasName()) {
+            user.setName(request.getName());
+        }
+
+        if (request.hasBirthday()) {
+            user.setBirthday(request.getBirthday());
+        }
+
+        if (request.hasEmail()) {
+            user.setEmail(request.getEmail());
+        }
+
+        return user;
+    }
+
+
 }

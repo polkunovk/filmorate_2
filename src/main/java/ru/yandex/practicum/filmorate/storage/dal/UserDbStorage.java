@@ -1,74 +1,85 @@
 package ru.yandex.practicum.filmorate.storage.dal;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
+@Primary
 @Repository
-public class UserDbStorage implements UserStorage {
+@Slf4j
+public class UserDbStorage extends BaseStorage<User> implements UserStorage {
+    private static final String FIND_ALL_QUERY = "SELECT * FROM \"USER\"";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM \"USER\" WHERE USER_ID = ?";
+    private static final String INSERT_QUERY = "INSERT INTO \"USER\"(NAME, LOGIN, EMAIL, BIRTHDAY)" +
+            "VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE \"USER\" SET NAME = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? " +
+            "WHERE USER_ID = ?";
+    private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM \"USER\" WHERE EMAIL = ?";
+    private static final String FIND_BY_LOGIN_QUERY = "SELECT * FROM \"USER\" WHERE LOGIN = ?";
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private int currentId = 1;
+    public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
+        super(jdbc, mapper);
+    }
 
-    @Override
+    public Optional<User> findById(int id) {
+        return findOne(FIND_BY_ID_QUERY, id);
+    }
+
+    public Optional<User> findByEmail(String email) {
+        return findOne(FIND_BY_EMAIL_QUERY, email);
+    }
+
+    public Optional<User> findByLogin(String login) {
+        return findOne(FIND_BY_LOGIN_QUERY, login);
+    }
+
+    public List<User> findAll() {
+        return findMany(FIND_ALL_QUERY);
+    }
+
     public User addUser(User user) {
-        user.setId(currentId++);
-        users.put(user.getId(), user);
+        String login;
+        if (user.getLogin() == null) {
+            login = user.getName() + "-" + user.getEmail();
+            user.setLogin(login);
+            log.warn("Логин не передан, он будет сгенирирован автоматически.");
+        }
+
+        int id = insert(INSERT_QUERY,
+                user.getName(),
+                user.getLogin(),
+                user.getEmail(),
+                user.getBirthday()
+        );
+        user.setId(id);
+        log.info("Создан новый пользователь c id: {}", user.getId());
+
         return user;
     }
 
-    @Override
     public User updateUser(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new NoSuchElementException("Пользователь с id " + user.getId() + " не найден.");
+        String login;
+        if (user.getLogin() == null) {
+            login = user.getName() + "-" + user.getEmail();
+            user.setLogin(login);
+            log.warn("Логин не передан, он будет сгенирирован автоматически.");
         }
-        users.put(user.getId(), user);
+        update(UPDATE_QUERY,
+                user.getName(),
+                user.getLogin(),
+                user.getEmail(),
+                user.getBirthday(),
+                user.getId()
+        );
+
+        log.info("Пользователь c id: {} обновлен", user.getId());
         return user;
-    }
-
-    @Override
-    public void deleteUser(int id) {
-        if (!users.containsKey(id)) {
-            throw new NoSuchElementException("Пользователь с id " + id + " не найден.");
-        }
-        users.remove(id);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
-    }
-
-    @Override
-    public User getUserById(int id) {
-        if (!users.containsKey(id)) {
-            throw new NoSuchElementException("Пользователь с id " + id + " не найден.");
-        }
-        return users.get(id);
-    }
-
-    @Override
-    public List<User> getUsersByIds(Set<Long> ids) {
-        List<User> result = new ArrayList<>();
-        for (Long id : ids) {
-            if (users.containsKey(id.intValue())) {
-                result.add(users.get(id.intValue()));
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public List<User> getCommonFriends(Set<Long> userFriends, Set<Long> otherUserFriends) {
-        Set<Long> commonIds = new HashSet<>(userFriends);
-        commonIds.retainAll(otherUserFriends);
-        return getUsersByIds(commonIds);
-    }
-
-    @Override
-    public boolean userExists(Long userId) {
-        return users.containsKey(userId.intValue());
     }
 }

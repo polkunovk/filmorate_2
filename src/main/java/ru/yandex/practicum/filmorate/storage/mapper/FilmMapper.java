@@ -1,91 +1,71 @@
 package ru.yandex.practicum.filmorate.storage.mapper;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.dto.FilmDto;
+import ru.yandex.practicum.filmorate.storage.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.storage.dto.UpdateFilmRequest;
 
-import java.util.List;
-import java.util.Set;
-
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
-
-    private final JdbcTemplate jdbcTemplate;
-
-    public FilmMapper(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
-    private static final RowMapper<Film> FILM_ROW_MAPPER = (rs, rowNum) -> {
+    public static Film mapToFilm(NewFilmRequest request) {
         Film film = new Film();
-        film.setId(rs.getInt("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
+        film.setName(request.getName());
+        film.setDescription(request.getDescription());
+        film.setDuration(request.getDuration());
+        film.setMpa(request.getMpa());
+        film.setReleaseDate(request.getReleaseDate());
+        film.setGenres(request.getGenres());
 
-        film.setGenres(fetchGenresByFilmId(rs.getInt("id")));
 
         return film;
-    };
+    }
 
-    public void addFilm(Film film) {
-        String sql = "INSERT INTO films (name, description, release_date, duration) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
+    public static FilmDto mapToFilmDto(Film film) {
+        FilmDto filmDto = new FilmDto();
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            int filmId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
-            insertGenres(filmId, film.getGenres());
+        filmDto.setId(film.getId());
+        filmDto.setName(film.getName());
+        filmDto.setDescription(film.getDescription());
+        filmDto.setDuration(film.getDuration());
+        filmDto.setMpa(film.getMpa());
+        filmDto.setReleaseDate(film.getReleaseDate());
+        filmDto.setLikesFromUsers(film.getLikesFromUsers());
+        filmDto.setGenres(film.getGenres());
+
+        return filmDto;
+    }
+
+    public static Film updateFilmFields(Film film, UpdateFilmRequest request) {
+        if (request.hasName()) {
+            film.setName(request.getName());
         }
-    }
 
-    public void updateFilm(Film film) {
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ? WHERE id = ?";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getId());
-
-        deleteGenresByFilmId(film.getId());
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            insertGenres(film.getId(), film.getGenres());
+        if (request.hasDescription()) {
+            film.setDescription(request.getDescription());
         }
-    }
 
-    public void deleteFilm(int id) {
-        deleteGenresByFilmId(id);
-        jdbcTemplate.update("DELETE FROM films WHERE id = ?", id);
-    }
-
-    public Film getFilmById(int id) {
-        String sql = "SELECT * FROM films WHERE id = ?";
-        List<Film> films = jdbcTemplate.query(sql, FILM_ROW_MAPPER, id);
-        return films.isEmpty() ? null : films.get(0);
-    }
-
-    public List<Film> getAllFilms() {
-        String sql = "SELECT * FROM films";
-        return jdbcTemplate.query(sql, FILM_ROW_MAPPER);
-    }
-
-    public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, COUNT(l.user_id) as likes_count FROM films f " +
-                "LEFT JOIN likes l ON f.id = l.film_id " +
-                "GROUP BY f.id ORDER BY likes_count DESC LIMIT ?";
-        return jdbcTemplate.query(sql, FILM_ROW_MAPPER, count);
-    }
-
-    private void insertGenres(int filmId, Set<String> genres) {
-        String sql = "INSERT INTO film_genres (film_id, genre) VALUES (?, ?)";
-        for (String genre : genres) {
-            jdbcTemplate.update(sql, filmId, genre);
+        if (request.hasDuration()) {
+            film.setDuration(request.getDuration());
         }
-    }
 
-    private void deleteGenresByFilmId(int filmId) {
-        String sql = "DELETE FROM film_genres WHERE film_id = ?";
-        jdbcTemplate.update(sql, filmId);
-    }
+        if (request.hasReleaseDate()) {
+            film.setReleaseDate(request.getReleaseDate());
+        }
 
-    private static Set<String> fetchGenresByFilmId(int filmId) {
-        return Set.of();
+        if (request.hasMpa()) {
+            film.setMpa(request.getMpa());
+        }
+
+        if (request.hasGenres()) {
+            film.setGenres(request.getGenres());
+        }
+
+        if (request.hasLikesFromUsers()) {
+            film.setLikesFromUsers(request.getLikesFromUsers());
+        }
+
+        return film;
     }
 }
