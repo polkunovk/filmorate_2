@@ -30,8 +30,6 @@ public class UserMapper {
         }};
     }
 
-
-    
     public static User updateUserFields(User user, UpdateUserRequest request) {
         if (request.hasLogin()) user.setLogin(request.getLogin());
         if (request.hasName()) user.setName(request.getName());
