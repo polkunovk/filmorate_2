@@ -41,3 +41,4 @@ VALUES(5, 'Документальный');
 MERGE INTO PUBLIC.GENRE
 (GENRE_ID, NAME)
 VALUES(6, 'Боевик');
+
