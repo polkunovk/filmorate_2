@@ -9,62 +9,39 @@ import ru.yandex.practicum.filmorate.storage.dto.UpdateFilmRequest;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
+
     public static Film mapToFilm(NewFilmRequest request) {
-        Film film = new Film();
-        film.setName(request.getName());
-        film.setDescription(request.getDescription());
-        film.setDuration(request.getDuration());
-        film.setMpa(request.getMpa());
-        film.setReleaseDate(request.getReleaseDate());
-        film.setGenres(request.getGenres());
-
-
-        return film;
+        return new Film() {{
+            setName(request.getName());
+            setDescription(request.getDescription());
+            setDuration(request.getDuration());
+            setMpa(request.getMpa());
+            setReleaseDate(request.getReleaseDate());
+            setGenres(request.getGenres());
+        }};
     }
 
     public static FilmDto mapToFilmDto(Film film) {
-        FilmDto filmDto = new FilmDto();
-
-        filmDto.setId(film.getId());
-        filmDto.setName(film.getName());
-        filmDto.setDescription(film.getDescription());
-        filmDto.setDuration(film.getDuration());
-        filmDto.setMpa(film.getMpa());
-        filmDto.setReleaseDate(film.getReleaseDate());
-        filmDto.setLikesFromUsers(film.getLikesFromUsers());
-        filmDto.setGenres(film.getGenres());
-
-        return filmDto;
+        return new FilmDto() {{
+            setId(film.getId());
+            setName(film.getName());
+            setDescription(film.getDescription());
+            setDuration(film.getDuration());
+            setMpa(film.getMpa());
+            setReleaseDate(film.getReleaseDate());
+            setLikesFromUsers(film.getLikesFromUsers());
+            setGenres(film.getGenres());
+        }};
     }
 
     public static Film updateFilmFields(Film film, UpdateFilmRequest request) {
-        if (request.hasName()) {
-            film.setName(request.getName());
-        }
-
-        if (request.hasDescription()) {
-            film.setDescription(request.getDescription());
-        }
-
-        if (request.hasDuration()) {
-            film.setDuration(request.getDuration());
-        }
-
-        if (request.hasReleaseDate()) {
-            film.setReleaseDate(request.getReleaseDate());
-        }
-
-        if (request.hasMpa()) {
-            film.setMpa(request.getMpa());
-        }
-
-        if (request.hasGenres()) {
-            film.setGenres(request.getGenres());
-        }
-
-        if (request.hasLikesFromUsers()) {
-            film.setLikesFromUsers(request.getLikesFromUsers());
-        }
+        if (request.hasName()) film.setName(request.getName());
+        if (request.hasDescription()) film.setDescription(request.getDescription());
+        if (request.hasDuration()) film.setDuration(request.getDuration());
+        if (request.hasReleaseDate()) film.setReleaseDate(request.getReleaseDate());
+        if (request.hasMpa()) film.setMpa(request.getMpa());
+        if (request.hasGenres()) film.setGenres(request.getGenres());
+        if (request.hasLikesFromUsers()) film.setLikesFromUsers(request.getLikesFromUsers());
 
         return film;
     }

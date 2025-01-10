@@ -9,49 +9,35 @@ import ru.yandex.practicum.filmorate.storage.dto.UserDto;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
+
     public static User mapToUser(NewUserRequest request) {
-        User user = new User();
-
-        user.setLogin(request.getLogin());
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setBirthday(request.getBirthday());
-
-        return user;
+        return new User() {{
+            setLogin(request.getLogin());
+            setName(request.getName());
+            setEmail(request.getEmail());
+            setBirthday(request.getBirthday());
+        }};
     }
 
     public static UserDto mapToUserDto(User user) {
-        UserDto userDto = new UserDto();
-
-        userDto.setId(user.getId());
-        userDto.setLogin(user.getLogin());
-        userDto.setName(user.getName());
-        userDto.setEmail(user.getEmail());
-        userDto.setBirthday(user.getBirthday());
-        userDto.setFriendsId(user.getFriendsId());
-
-        return userDto;
+        return new UserDto() {{
+            setId(user.getId());
+            setLogin(user.getLogin());
+            setName(user.getName());
+            setEmail(user.getEmail());
+            setBirthday(user.getBirthday());
+            setFriendsId(user.getFriendsId());
+        }};
     }
 
+
+    
     public static User updateUserFields(User user, UpdateUserRequest request) {
-        if (request.hasLogin()) {
-            user.setLogin(request.getLogin());
-        }
-
-        if (request.hasName()) {
-            user.setName(request.getName());
-        }
-
-        if (request.hasBirthday()) {
-            user.setBirthday(request.getBirthday());
-        }
-
-        if (request.hasEmail()) {
-            user.setEmail(request.getEmail());
-        }
+        if (request.hasLogin()) user.setLogin(request.getLogin());
+        if (request.hasName()) user.setName(request.getName());
+        if (request.hasBirthday()) user.setBirthday(request.getBirthday());
+        if (request.hasEmail()) user.setEmail(request.getEmail());
 
         return user;
     }
-
-
 }
