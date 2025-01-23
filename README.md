@@ -1,13 +1,18 @@
 # java-filmorate
 Template repository for the Filmorate project.
 
-## Database Diagram
+## Схема базы данных
 
 ![Database Diagram](photo/Untitled.png)
 
-## Example Query
+## Примеры запросов
 
-### Adding a New Film to the `films` Table
+### 1. Добавление нового фильма в таблицу «films»
+### 2. Получение всех фильмов
+### 3. Получение всех пользователей
+### 4. Топ фильмов по количеству лайков
+### 5. Фильмы, которые оценили более 10 пользователей
+### 6. Фильмы, которые оценили самые активные пользователи (более 5 лайков)
 
 ```sql
 

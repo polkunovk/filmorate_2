@@ -1,68 +1,104 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.IdGenerator;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
 
+@Slf4j
 @Component
-public class InMemoryUserStorage implements UserStorage {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int currentId = 1;
+public class InMemoryUserStorage extends IdGenerator implements UserStorage {
+    private final Map<Integer, User> usersMap = new HashMap<>();
 
-    @Override
+    public Map<Integer, User> getUsersMap() {
+        return usersMap;
+    }
+
+    public Collection<User> getUsers() {
+        log.info("Получен список пользователей.");
+        return usersMap.values();
+    }
+
+    public Collection<Integer> getUsersIds() {
+        log.info("Получен список id пользователей.");
+        return usersMap.keySet();
+    }
+
     public User addUser(User user) {
-        user.setId(currentId++);
-        users.put(user.getId(), user);
+        if (isEmailTaken(user.getEmail())) {
+            throw new ValidationException("Электронная почта уже используется.");
+        }
+
+        if (isLoginTaken(user.getLogin())) {
+            throw new ValidationException("Такой логин уже существует.");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.warn("Имя не передано, его заменит логин пользователя.");
+        }
+
+        if (user.getId() == null) {
+            user.setId(generateNextUserId(usersMap));
+        }
+
+        usersMap.put(user.getId(), user);
+        log.info("Создан новый пользователь c id: {}", user.getId());
+
         return user;
     }
 
-    @Override
-    public User updateUser(User user) {
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
-            return user;
-        } else {
-            throw new IllegalArgumentException("Пользователь с ID " + user.getId() + " не найден.");
+    public User updateUser(User newUser) {
+        if (newUser.getId() == null) {
+            log.error("Id не куказан.");
+            throw new ValidationException("Id должен быть указан");
         }
-    }
+        if (usersMap.containsKey(newUser.getId())) {
+            if (isEmailTaken(newUser.getEmail())) {
+                throw new ValidationException("Электронная почта уже используется");
+            }
+            if (isLoginTaken(newUser.getLogin())) {
+                throw new ValidationException("Такой логин уже существует.");
+            }
 
-    @Override
-    public void deleteUser(int id) {
-        if (!users.containsKey(id)) {
-            throw new IllegalArgumentException("Пользователь с ID " + id + " не найден.");
+            if (newUser.getName() == null || newUser.getName().isBlank()) {
+                newUser.setName(newUser.getLogin());
+                log.warn("Имя не передано, его заменит логин пользователя.");
+            }
+
+            User oldUser = usersMap.get(newUser.getId());
+
+            oldUser.setName(newUser.getName());
+            oldUser.setBirthday(newUser.getBirthday());
+            if (!newUser.getLogin().equals(oldUser.getLogin())) {
+                oldUser.setLogin(newUser.getLogin());
+            }
+            if (!newUser.getEmail().equals(oldUser.getEmail())) {
+                oldUser.setEmail(newUser.getEmail());
+            }
+            log.info("Пользователь c id: {} обновлен", oldUser.getId());
+
+            return oldUser;
         }
-        users.remove(id);
+        log.error("User с id = {} не найден", newUser.getId());
+        throw new NotFoundException("User с id = " + newUser.getId() + " не найден");
     }
 
-    @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+    private boolean isEmailTaken(String email) {
+        return usersMap.values().stream().anyMatch(user -> user.getEmail().equals(email));
     }
 
-    @Override
-    public User getUserById(int id) {
-        return users.get(id);
+    private boolean isLoginTaken(String login) {
+        return usersMap.values().stream().anyMatch(user -> user.getLogin().equals(login));
     }
 
-    @Override
-    public List<User> getUsersByIds(Set<Long> ids) {
-        return users.values().stream()
-                .filter(user -> ids.contains((long) user.getId()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> getCommonFriends(Set<Long> userFriends, Set<Long> otherUserFriends) {
-        Set<Long> commonFriendsIds = new HashSet<>(userFriends);
-        commonFriendsIds.retainAll(otherUserFriends);
-        return getUsersByIds(commonFriendsIds);
-    }
-
-    @Override
-    public boolean userExists(Long userId) {
-        return users.values().stream()
-                .anyMatch(user -> user.getId() == userId);
+    private Integer generateNextUserId(Map<Integer, User> userMap) {
+        return userMap.isEmpty() ? 1 : userMap.keySet().stream().max(Integer::compare).orElse(0) + 1;
     }
 }
